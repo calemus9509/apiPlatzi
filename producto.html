@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Productos</title>
+    <link rel="stylesheet" href="css/bootstrap.css"></link>
+    <script src="js/bootstrap.js"></script>
+  </head>
+  <body onload="retornar()">
+    <div class="container-fluid row justify-content-center">
+      
+      <div class="row titulo d-flex align-content-center">
+        <a style="width: 100px;"
+        class="btn btn-primary"
+        type="button"
+        data-bs-toggle="offcanvas"
+        data-bs-target="#offcanvasScrolling"
+        aria-controls="offcanvasScrolling"
+        onclick="imprimirC()"
+      >
+        Carrito
+      </a>
+
+      <div
+        class="offcanvas offcanvas-start"
+        data-bs-scroll="true"
+        data-bs-backdrop="false"
+        tabindex="-1"
+        id="offcanvasScrolling"
+        aria-labelledby="offcanvasScrollingLabel"
+      >
+        <div class="offcanvas-header">
+          <h5 class="offcanvas-title" id="offcanvasScrollingLabel">
+            Productos
+          </h5>
+          <button
+            type="button"
+            class="btn-close"
+            data-bs-dismiss="offcanvas"
+            aria-label="Close"
+          ></button>
+        </div>
+        <div class="offcanvas-body">
+          <select  onchange="divisas()" id="divi" class="form-select" aria-label="Default select example">
+            <option selected>USD</option>
+            <option value="COP">COP</option>
+            <option value="EUR">EUR</option>
+            <option value="JPY">JPY</option>
+            <option value="GBP">GBP</option>
+            <option value="AUD">AUD</option>
+            <option value="CAD">CAD</option>
+          </select>
+          
+           
+          <ul id="agregarcarrito"></ul>
+          <div class="offcanvas-bottom">
+            <h3> precio a Pagar: 
+              <h3 id="totalprecio"></h3>
+            </h3>
+          </div>
+        </div>
+      </div>
+        <h1 class="text-center text-uppercase" id="clasificarp"></h1>
+      </div>
+      <div class="row justify-content-center" id="cartasp"></div>
+    </div>
+  </body>
+</html>
+<script>
+  function retornar() {
+    return new Promise((response) => {
+      let url = localStorage.id;
+      let api = `https://api.escuelajs.co/api/v1/products/?categoryId=${url}`;
+      let varios = "";
+      fetch(api)
+        .then((response) => response.json())
+        .then((data) => {
+          data.forEach((element) => {
+            let id = element.id
+            document.getElementById("clasificarp").innerHTML = ` ${element.category.name}`;
+            varios += `<div class="card mx-3  my-3" style="width: 18rem;">
+                      <img src=${element.images[0]} class="card-img-top" alt="...">
+                      <div class="card-body">  
+                      <h5 class="card-title">Nombre: ${element.title}</h5>
+                      <h5 class="card-title">Precio: ${element.price} </h5>
+                      <h5 class="card-title">${element.description}</h5>
+                      <a onclick="agregarCarritos('${id}')" class="btn btn-primary">Carrito</a>
+    
+                      </div>
+                      </div>`;
+          });
+          document.getElementById("cartasp").innerHTML = varios;
+
+        });
+    });
+  }
+//guardar en local storage
+  let carros= [localStorage.ids]
+  carros = JSON.parse(carros)
+//agregar al carrito
+  function agregarCarritos(ids) {
+    carros.push(ids)
+    localStorage.setItem("ids",JSON.stringify(carros))
+  }
+  //imprimir en el carrito
+  function imprimirC(){
+    let anadir =""
+    let total = 0
+    
+    carros.forEach(element => {
+      console.log(carros)
+      if (element==undefined ||element== null) {
+        document.getElementById("agregarcarrito").innerHTML=""
+        document.getElementById("totalprecio").innerHTML= ""
+      }else{
+        let url = `https://api.escuelajs.co/api/v1/products/`
+        fetch(`${url}${element}`)
+        .then((response)=>response.json())
+        .then((data)=>{
+          let precio = data.price
+          let id = data.id
+          total += precio
+          anadir+= `<div class="card mx-3  my-3" style="width: 18rem;">
+                      <img src=${data.images} class="card-img-top" alt="...">
+                      <div class="card-body">  
+                      <h5 class="card-title"> ${data.title}</h5>
+                      <h5 id="precio${id}" class="card-title">Precio: ${data.price} </h5>
+                      <a onclick="eliminarCar('${data.id}')"  bg-dark  class="btn btn-primary">eliminar</a>
+    
+                      </div>
+                      </div>`;
+                      document.getElementById("agregarcarrito").innerHTML=anadir
+                      localStorage.setItem("ids",JSON.stringify(carros))
+                      document.getElementById("totalprecio").innerHTML= "$"+ total 
+        })
+        
+      }
+      
+    });
+  }
+//eliminar del carrito
+  function eliminarCar(data){
+    if (carros.includes(data)) {
+      let lugar= carros.indexOf(`${data}`)
+      carros.splice(lugar,1)
+      localStorage.setItem("ids",JSON.stringify(carros))
+      imprimirC()
+
+      
+    }
+  }
+
+//convertir monedas
+  function divisas(){
+    totalC =0
+    carros.forEach(element => {
+      console.log(element)
+      fetch(`https://api.escuelajs.co/api/v1/products/${element}`)
+      .then((response)=>response.json())
+      .then((data)=>{
+        let precio = data.price
+        let id = data.id
+        var seleccionar= document.getElementById("divi")
+        var cambio = seleccionar.options[seleccionar.selectedIndex].value
+        console.log(cambio);
+        //CODIGO DE LA API
+         var myHeaders = new Headers();
+          myHeaders.append("apikey", "fd03Dkrjcn2NBUvV9xgBhNgaY8vrQSaH");
+
+          var requestOptions = {
+            method: 'GET',
+            redirect: 'follow',
+            headers: myHeaders
+          };
+
+fetch(`https://api.apilayer.com/fixer/convert?to=${cambio}&from=USD&amount=${precio}`,requestOptions)
+  .then((response) => response.json())
+  .then((result) =>{
+    console.log(result);
+    document.getElementById(`precio${id}`).innerText = result.result
+    totalC += result.result
+    document.getElementById("totalprecio").innerHTML = "$ " + totalC
+  })
+
+      })
+
+      
+    });
+
+  }
+
+</script>

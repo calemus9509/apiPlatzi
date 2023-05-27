@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Tienda falsa</title>
+    <link rel="stylesheet" href="css/bootstrap.css"></link>
+    <link rel="stylesheet" href="css/stilo.css"></link>
+    <script src="js/bootstrap.js"></script>
+  </head>
+  <body onload="categoriasP()">
+      <div class="container-fluid  bg-dark">
+        <nav style="width: 100%" class="me-5 bg-dark d-flex  justify-content-center">
+          <input style="height: 35px; top: 5px;"
+          type="text"
+          class="buscador"
+          placeholder="Buscar Producto: "
+          id="buscarP"
+          onkeyup=""
+          />
+          <button class="btnBuscar" id="botonP" onclick="buscarProducto()">
+            Buscar
+          </button>
+
+        </nav>
+        <section>
+            <div class="row justify-content-center"  id="cart"></div>
+            <div class="row justify-content-center" id="cartas"></div>
+        </section>
+      </div> 
+  </body>
+</html>
+
+<script>
+  //mostrar productos en el buscador
+  function buscarProducto(){
+    let buscarProducto = document.getElementById("buscarP")
+    let nombre= buscarProducto.value
+    let urlp=`https://api.escuelajs.co/api/v1/products/?title=${nombre}` 
+    let buscar= document.getElementById("botonP")
+    let productosp=""
+    fetch(urlp)
+    .then((response)=>response.json())
+    .then((data)=>{
+     data.forEach(element => {
+      productosp +=`<div class="card mx-3  my-3" style="width: 18rem;">
+                      <img src=${element.images[0]} class="card-img-top" alt="...">
+                      <div class="card-body">  
+                      <h5 class="card-title">Nombre: ${element.title}</h5>
+                      <h5 class="card-title">Precio: ${element.price} </h5>
+                      <h5 class="card-title">${element.description}</h5>
+                      <a bg-dark onclick="categoriasP()" class="btn btn-primary href="index.html">Volver</a>
+    
+                      </div>
+                      </div>`
+
+      
+     }); 
+     document.getElementById("cart").innerHTML = productosp;
+     document.getElementById("cartas").innerHTML = "";
+
+
+    })
+
+  }
+
+
+  //mostrar categorias
+    function categoriasP(){
+        let = url= "https://api.escuelajs.co/api/v1/categories"
+        categorias=""
+        fetch(url)
+        .then((response)=>response.json())
+        .then((data)=>{
+          data.forEach(element => {
+            categorias +=`<div class="card mx-3  my-3" style="width: 18rem;">
+                  <img src=${element.image} class="card-img-top" alt="...">
+                  <div class="card-body">
+                  <h5 class="card-title">${element.name}</h5>
+                 <a class="btn btn-primary" onclick="local('${element.id}')" href="producto.html">Detalles</a>
+                  </div>
+                  </div>`
+
+          });
+          document.getElementById("cartas").innerHTML=categorias
+          document.getElementById("cart").innerHTML = "";
+        })
+
+
+    }
+
+    //llevar informacion en el local storage
+    function local(idCat) {
+    localStorage.setItem("id", idCat);
+    console.log(idCat);
+  }
+</script>
